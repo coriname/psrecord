@@ -44,7 +44,7 @@ def get_memory(process):
         return process.get_memory_info()
 
 
-def all_children(pr):
+def all_children(pr):        
     processes = []
     children = []
     try:
@@ -58,6 +58,13 @@ def all_children(pr):
         processes.append(child)
         processes += all_children(child)
     return processes
+
+
+def get_children_names(process):
+    try:
+        return process.name()
+    except AttributeError:
+        return process.get_name()
 
 
 def main():
@@ -125,12 +132,12 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
 
     if logfile:
         f = open(logfile, 'w')
-        f.write("# {0:12s} {1:12s} {2:12s} {3:12s}\n".format(
+        f.write("# {0:12s} {1:12s} {2:12s} {3:12s} {4:255s}\n".format(
             'Elapsed time'.center(12),
             'CPU (%)'.center(12),
             'Real (MB)'.center(12),
             'Virtual (MB)'.center(12),
-            'Process names'.center(255))
+            'Process names'.center(20))
         )
 
     log = {}
@@ -182,19 +189,19 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
                     try:
                         current_cpu += get_percent(child)
                         current_mem = get_memory(child)
-                        current_name.append(pr.name())
+                        current_name.append(get_children_names(child))
                     except Exception:
                         continue
                     current_mem_real += current_mem.rss / 1024. ** 2
                     current_mem_virtual += current_mem.vms / 1024. ** 2
 
             if logfile:
-                f.write("{0:12.3f} {1:12.3f} {2:12.3f} {3:12.3f}\n".format(
+                f.write("{0:12.3f} {1:12.3f} {2:12.3f} {3:12.3f} {4:255s}\n".format(
                     current_time - start_time,
                     current_cpu,
                     current_mem_real,
                     current_mem_virtual,
-                    current_name))
+                    ','.join(current_name)))
                 f.flush()
 
             if interval is not None:
