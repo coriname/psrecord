@@ -48,7 +48,7 @@ def all_children(pr):
     processes = []
     children = []
     try:
-        children = pr.children(recursive=True)
+        children = pr.children()
     except AttributeError:
         children = pr.get_children()
     except Exception:  # pragma: no cover
@@ -129,7 +129,8 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
             'Elapsed time'.center(12),
             'CPU (%)'.center(12),
             'Real (MB)'.center(12),
-            'Virtual (MB)'.center(12))
+            'Virtual (MB)'.center(12),
+            'Process names'.left(255))
         )
 
     log = {}
@@ -137,6 +138,7 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
     log['cpu'] = []
     log['mem_real'] = []
     log['mem_virtual'] = []
+    log['name'] = []
 
     try:
 
@@ -164,9 +166,11 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
                 break
 
             # Get current CPU and memory
+            current_name = []
             try:
                 current_cpu = get_percent(pr)
                 current_mem = get_memory(pr)
+                current_name.append(pr.name())
             except Exception:
                 break
             current_mem_real = current_mem.rss / 1024. ** 2
@@ -178,6 +182,7 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
                     try:
                         current_cpu += get_percent(child)
                         current_mem = get_memory(child)
+                        current_name.append(pr.name())
                     except Exception:
                         continue
                     current_mem_real += current_mem.rss / 1024. ** 2
@@ -188,7 +193,8 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
                     current_time - start_time,
                     current_cpu,
                     current_mem_real,
-                    current_mem_virtual))
+                    current_mem_virtual,
+                    current_name))
                 f.flush()
 
             if interval is not None:
@@ -200,6 +206,7 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
                 log['cpu'].append(current_cpu)
                 log['mem_real'].append(current_mem_real)
                 log['mem_virtual'].append(current_mem_virtual)
+                log['name'].append(current_name)
 
     except KeyboardInterrupt:  # pragma: no cover
         pass
