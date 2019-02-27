@@ -48,7 +48,7 @@ def all_children(pr):
     processes = []
     children = []
     try:
-        children = pr.children()
+        children = pr.children(recursive=True)
     except AttributeError:
         children = pr.get_children()
     except Exception:  # pragma: no cover
