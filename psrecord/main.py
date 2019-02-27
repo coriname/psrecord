@@ -130,7 +130,7 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
             'CPU (%)'.center(12),
             'Real (MB)'.center(12),
             'Virtual (MB)'.center(12),
-            'Process names'.left(255))
+            'Process names'.center(255))
         )
 
     log = {}
