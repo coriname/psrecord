@@ -32,7 +32,8 @@ import argparse
 
 def get_percent(process):
     try:
-        return process.cpu_percent()
+        # first call returns 0
+        return process.cpu_percent(interval=0.01)
     except AttributeError:
         return process.get_cpu_percent()
 
@@ -48,15 +49,16 @@ def all_children(pr):
     processes = []
     children = []
     try:
-        children = pr.children()
+        children = pr.children(recursive=True)
     except AttributeError:
         children = pr.get_children()
     except Exception:  # pragma: no cover
         pass
 
     for child in children:
-        processes.append(child)
-        processes += all_children(child)
+        if child.status() == 'running':
+            processes.append(child)
+            processes += all_children(child)
     return processes
 
 
