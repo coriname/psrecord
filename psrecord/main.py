@@ -56,7 +56,11 @@ def all_children(pr):
         pass
 
     for child in children:
-        if child.status() == 'running':
+        try: 
+            stat = child.status()
+        except:
+            continue
+        if stat == 'running':
             processes.append(child)
             processes += all_children(child)
     return processes
@@ -67,6 +71,35 @@ def get_children_names(process):
         return process.name()
     except AttributeError:
         return process.get_name()
+        
+
+def get_process_group(log):
+    prev = ''
+    group={}
+    cnt = -1
+    for idx, elem in enumerate(log['name']):
+        single_name = elem[-1]
+        if elem!=prev:
+            cnt += 1
+            group[(cnt, single_name)] = []
+        group[(cnt, single_name)].append(idx)
+        prev = elem
+    return group
+
+def get_groupmempeak(group, log, count=10):
+    import numpy as np
+    peak_info_tmp = []
+    for k,v in group.items():
+        mem_group = [log['mem_real'][i] for i in v]
+        max_idx = np.argmax(mem_group)
+        max_mem_group = mem_group[max_idx]
+        max_idx_group = v[max_idx]
+        peak_info_tmp.append((k[1], max_idx_group, max_mem_group))
+    peak_info_sorted = sorted(peak_info_tmp, key=lambda x: x[2], reverse=True)
+    if count:
+        peak_info = peak_info_sorted[0:count]
+    return peak_info
+
 
 
 def main():
@@ -224,27 +257,40 @@ def monitor(pid, logfile=None, plot=None, duration=None, interval=None,
         f.close()
 
     if plot:
+        process_group = get_process_group(log)
+        mempeak_info = get_groupmempeak(process_group, log, count=10)
 
         # Use non-interactive backend, to enable operation on headless machines
         import matplotlib.pyplot as plt
+        import matplotlib.gridspec as gridspec
         with plt.rc_context({'backend': 'Agg'}):
 
-            fig = plt.figure()
-            ax = fig.add_subplot(1, 1, 1)
+            fig = plt.figure(figsize=(10,6), dpi=150, facecolor='w')
+            gs = gridspec.GridSpec(1,2, width_ratios=[4,1])
+            ax = plt.subplot(gs[0])
 
             ax.plot(log['times'], log['cpu'], '-', lw=1, color='r')
-
             ax.set_ylabel('CPU (%)', color='r')
             ax.set_xlabel('time (s)')
             ax.set_ylim(0., max(log['cpu']) * 1.2)
 
             ax2 = ax.twinx()
-
             ax2.plot(log['times'], log['mem_real'], '-', lw=1, color='b')
             ax2.set_ylim(0., max(log['mem_real']) * 1.2)
-
             ax2.set_ylabel('Real Memory (MB)', color='b')
-
+            
             ax.grid()
+            
+            ax_text = plt.subplot(gs[1])
+            ax_text.text(0.1, 1, 'Top List - Memory Consumption:', {'ha': 'left', 'va': 'bottom'}, fontsize=8, transform=ax_text.transAxes)
+            ax_text.set_axis_off()
+            ax_text.yaxis.set_visible(False)
+            ax_text.xaxis.set_visible(False)
+            text_init = (0.15, 0.95)
+            cnt = 0
+            for elem in mempeak_info:
+                cnt -= 0.03
+                mem_str = "{:.2f}".format(elem[2])
+                ax_text.text(text_init[0], text_init[1]+cnt, elem[0]+' - '+mem_str+'MB', {'ha': 'left', 'va': 'bottom'}, fontsize=8, transform=ax_text.transAxes)
 
             fig.savefig(plot)
