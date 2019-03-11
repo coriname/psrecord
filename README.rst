@@ -1,5 +1,3 @@
-|Build Status| |Coverage Status|
-
 About
 =====
 
@@ -10,6 +8,8 @@ and is therefore experimental.
 
 The code is released under a Simplified BSD License, which is given in
 the ``LICENSE`` file.
+
+The present repository is a fork of https://github.com/astrofrog/psrecord with minor modifications, especially for the output plot.
 
 Requirements
 ============
@@ -22,9 +22,12 @@ Requirements
 Installation
 ============
 
-To install, simply do::
+The package including its dependencies is available as a python virtual environment. 
 
-    pip install psrecord
+To activate the environment on the blades do::
+
+source /beegfs/scratch/tnc_scratch/cmelzer/Develop/psrecord_env/bin/activate
+
 
 Usage
 =====
@@ -32,14 +35,14 @@ Usage
 Basics
 ------
 
-To record the CPU and memory activity of an existing process to a file (use sudo for a root process):
+To record the CPU and memory activity of an existing process to a file:
 
 ::
 
     psrecord 1330 --log activity.txt
 
 where ``1330`` is an example of a process ID which you can find with
-``ps`` or ``top``. You can also use ``psrecord`` to start up a process
+``ps``, ``htop`` or ``top``. You can also use ``psrecord`` to start up a process
 by specifying the command in quotes:
 
 ::
@@ -49,7 +52,7 @@ by specifying the command in quotes:
 Plotting
 --------
 
-To make a plot of the activity:
+To make a plot of the activity, you need to login to the blade using ``ssh -Y blade10``. Then use
 
 ::
 
@@ -92,24 +95,3 @@ To include sub-processes in the CPU and memory stats, use:
 
     psrecord 1330 --log activity.txt --include-children
 
-Running tests
-=============
-
-To run tests, you will need `pytest <https://docs.pytest.org/en/latest/>`_. You can install it with::
-
-    pip install pytest
-    
-You can then run the tests with::
-
-    pytest psrecord
-
-Reporting issues
-================
-
-Please report any issues in the `issue
-tracker <https://github.com/astrofrog/psrecord/issues>`__.
-
-.. |Build Status| image:: https://travis-ci.org/astrofrog/psrecord.svg?branch=master
-   :target: https://travis-ci.org/astrofrog/psrecord
-.. |Coverage Status| image:: https://codecov.io/gh/astrofrog/psrecord/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/astrofrog/psrecord
