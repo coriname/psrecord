@@ -24,9 +24,11 @@ Installation
 
 The package including its dependencies is available as a python virtual environment. 
 
-To activate the environment on the blades do::
+To activate the environment on the blades do:
 
-source /beegfs/scratch/tnc_scratch/cmelzer/Develop/psrecord_env/bin/activate
+::
+
+   source /beegfs/scratch/tnc_scratch/cmelzer/Develop/psrecord_env/bin/activate
 
 
 Usage
