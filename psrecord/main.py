@@ -88,14 +88,25 @@ def get_process_group(log):
 
 def get_groupmempeak(group, log, count=10):
     import numpy as np
-    peak_info_tmp = []
+    peak_info_dict = {}
+    peak_info_list = [] 
     for k,v in group.items():
         mem_group = [log['mem_real'][i] for i in v]
         max_idx = np.argmax(mem_group)
         max_mem_group = mem_group[max_idx]
         max_idx_group = v[max_idx]
-        peak_info_tmp.append((k[1], max_idx_group, max_mem_group))
-    peak_info_sorted = sorted(peak_info_tmp, key=lambda x: x[2], reverse=True)
+        if unique:
+            try:
+                if peak_info_dict[k[1]][1]<max_mem_group:
+                    peak_info_dict[k[1]] = [max_idx_group, max_mem_group]
+            except:
+                peak_info_dict[k[1]]=[max_idx_group, max_mem_group]
+        else:    
+            peak_info_list.append((k[1], max_idx_group, max_mem_group))
+    # convert dict to list
+    if unique:
+        peak_info_list = [(k,v[0],v[1]) for k,v in peak_info_dict.items()]
+    peak_info_sorted = sorted(peak_info_list, key=lambda x: x[2], reverse=True)
     if count:
         peak_info = peak_info_sorted[0:count]
     return peak_info
