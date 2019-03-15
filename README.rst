@@ -71,6 +71,14 @@ plot at the same time:
 
     psrecord 1330 --log activity.txt --plot plot.png
 
+To plot from a log file created previously:
+
+::
+
+	psrecord_plot logfile.log
+	
+A PNG with the same filename base as the logfile will be created.
+
 Duration and intervals
 ----------------------
 
